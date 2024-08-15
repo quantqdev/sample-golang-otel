@@ -102,8 +102,9 @@ func testSpan(ctx context.Context, tracer trace.Tracer, meter metric.Meter) {
 	res, err := sendEcho(ctx, "testspan")
 	if err != nil {
 		otel.LogWithTraceID(ctx, err.Error())
+	} else {
+		otel.LogWithTraceID(ctx, *res)
 	}
-	otel.LogWithTraceID(ctx, *res)
 	span.End()
 }
 
