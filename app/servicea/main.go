@@ -33,23 +33,17 @@ func main() {
 	defer otelShutdown()
 
 	testSpan(ctx, tracer, meter)
-	startServer(tracer)
+	startServer()
 }
 
 type EchoBody struct {
 	Text string `json:"text" binding:"required"`
 }
 
-func startServer(tracer trace.Tracer) {
+func startServer() {
 	r := gin.New()
 	r.Use(otelgin.Middleware(serviceName))
 	r.POST("echo", func(ctx *gin.Context) {
-		spanCtx, span := tracer.Start(ctx.Request.Context(), "echo")
-		defer span.End()
-		defer func() {
-			otel.LogWithTraceID(spanCtx, "finish request")
-		}()
-
 		var body EchoBody
 		if err := ctx.BindJSON(&body); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{
@@ -57,7 +51,7 @@ func startServer(tracer trace.Tracer) {
 			})
 			return
 		}
-		res, err := sendEcho(spanCtx, body.Text)
+		res, err := sendEcho(ctx.Request.Context(), body.Text)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"Error": err.Error(),
