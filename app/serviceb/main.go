@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"log"
 	"myorg/lib/otel"
+	pb "myorg/lib/proto/gen/go/echo"
 	"net"
 
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
-
-	pb "myorg/lib/proto/gen/go/echo"
 )
 
 const (
