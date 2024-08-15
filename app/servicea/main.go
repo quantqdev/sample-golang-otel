@@ -17,6 +17,11 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"gorm.io/plugin/opentelemetry/logging/logrus"
+	"gorm.io/plugin/opentelemetry/tracing"
 )
 
 const (
@@ -99,6 +104,7 @@ func testSpan(ctx context.Context, tracer trace.Tracer, meter metric.Meter) {
 	} else {
 		otel.LogWithTraceID(ctx, *res)
 	}
+	queryDB(ctx, tracer)
 	span.End()
 }
 
@@ -124,4 +130,32 @@ func sendEcho(ctx context.Context, text string) (*string, error) {
 	}
 
 	return &r.Value, nil
+}
+
+func queryDB(ctx context.Context, tracer trace.Tracer) {
+	logger := logger.New(
+		logrus.NewWriter(),
+		logger.Config{
+			SlowThreshold: time.Millisecond,
+			LogLevel:      logger.Warn,
+			Colorful:      false,
+		},
+	)
+
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{Logger: logger})
+	if err != nil {
+		panic(err)
+	}
+
+	if err := db.Use(tracing.NewPlugin()); err != nil {
+		panic(err)
+	}
+
+	ctx, span := tracer.Start(ctx, "root")
+	defer span.End()
+
+	var num int
+	if err := db.WithContext(ctx).Raw("SELECT 42").Scan(&num).Error; err != nil {
+		panic(err)
+	}
 }
