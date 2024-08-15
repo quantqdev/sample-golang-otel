@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package myorg.lib.proto.echo;
+
+import "google/api/annotations.proto";
+
+option go_package = "myorg/lib/proto/gen/go/echo";
+
+message StringMessage {
+  string value = 1;
+}
+
+service EchoService {
+  rpc Echo(StringMessage) returns (StringMessage) {
+    option (google.api.http) = {
+      post: "/v1/echo"
+      body: "*"
+    };
+  }
+}

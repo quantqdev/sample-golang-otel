@@ -1,0 +1,5 @@
+POST {{hostA}}/echo
+
+{
+    "text": "text one"
+}
