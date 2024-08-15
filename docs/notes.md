@@ -1,0 +1,3 @@
+- Otel registry: https://opentelemetry.io/ecosystem/registry/?language=go&component=instrumentation&s=gin
+- Jaeger UI: http://localhost:16686/search
+- Prometheus: http://localhost:9090/graph?g0.expr=testapp_run_total&g0.tab=1&g0.display_mode=lines&g0.show_exemplars=0&g0.range_input=1h
